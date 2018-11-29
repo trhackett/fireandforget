@@ -5,6 +5,10 @@ Claudia Siedel
 
 *** extending gem5 load queue and store queue ***
 
+Files we've added/modified (track for scp purposes):
+gem5/src/cpu/o3/{ cpu_policy.cc SConscript toylsq.hh toylsq.cc toylsq_impl.hh
+				 toylsq_unit.hh toylsq_unit.cc toylsq_unit_impl.hh }
+
 --- Citation for gem5 ---
 
 The gem5 Simulator. Nathan Binkert, Bradford Beckmann, Gabriel Black, Steven K. Reinhardt, Ali Saidi, Arkaprava Basu, Joel Hestness, Derek R. Hower, Tushar Krishna, Somayeh Sardashti, Rathijit Sen, Korey Sewell, Muhammad Shoaib, Nilay Vaish, Mark D. Hill, and David A. Wood. May 2011, ACM SIGARCH Computer Architecture News.
