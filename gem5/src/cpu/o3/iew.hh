@@ -49,6 +49,7 @@
 #include "base/statistics.hh"
 #include "cpu/o3/comm.hh"
 #include "cpu/o3/lsq.hh"
+#include "cpu/o3/toylsq.hh"
 #include "cpu/o3/scoreboard.hh"
 #include "cpu/timebuf.hh"
 #include "debug/IEW.hh"
@@ -87,7 +88,9 @@ class DefaultIEW
 
     typedef typename CPUPol::IQ IQ;
     typedef typename CPUPol::RenameMap RenameMap;
-    typedef typename CPUPol::LSQ LSQ;
+
+    // this is where you set the LSQ
+    typedef typename CPUPol::ToyLSQ LSQ;
 
     typedef typename CPUPol::TimeStruct TimeStruct;
     typedef typename CPUPol::IEWStruct IEWStruct;

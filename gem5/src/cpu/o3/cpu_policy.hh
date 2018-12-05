@@ -79,7 +79,19 @@ struct SimpleCPUPolicy
     typedef ::LSQUnit<Impl> LSQUnit;
 
     /*
-        Toy LSQ
+        Toy LSQ - this isn't exactly what I want to do...
+        I'll instead change lines 77 and 79 to
+        typedef ::ToyLSQ<Impl> LSQ
+        typedef ::LSQUnit<Impl> LSQUnit
+
+        so that all of the classes that have an LSQ use my ToyLSQ class
+        instead of theirs
+
+        I would have loved for this to work... But I'm missing something and
+        I feel like it's a waste of time to contine to try to make it work.
+        I think it is a better use of time to just go to the classes that have
+        an LSQ (IEW and DCachePort has a pointer) and just change the definitions
+        of those classes to store ToyLSQ/ToyLSQUnits instead
     */
     typedef ::ToyLSQ<Impl> ToyLSQ;
     typedef ::ToyLSQUnit<Impl> ToyLSQUnit;

@@ -731,6 +731,9 @@ class BaseDynInst : public ExecContext, public RefCounted
     /** Sets this instruction as executed. */
     void setExecuted() { status.set(Executed); }
 
+    // ADDED - need to be able to reset executed
+    void clearExecuted() { status.reset(Executed); }
+
     /** Returns whether or not this instruction has executed. */
     bool isExecuted() const { return status[Executed]; }
 

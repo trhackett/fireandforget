@@ -68,6 +68,11 @@ BaseO3DynInst<Impl>::BaseO3DynInst(const StaticInstPtr &_staticInst,
 
 template <class Impl>BaseO3DynInst<Impl>::~BaseO3DynInst()
 {
+    // ADDED
+    if (memDataCopy != nullptr) {
+        delete [] memDataCopy;
+    }
+
 #if TRACING_ON
     if (DTRACE(O3PipeView)) {
         Tick fetch = this->fetchTick;
@@ -109,6 +114,9 @@ BaseO3DynInst<Impl>::initVars()
     this->_readySrcRegIdx.reset();
 
     _numDestMiscRegs = 0;
+
+    // ADDED - take care of yo memory
+    memDataCopy = nullptr;
 
 #if TRACING_ON
     // Value -1 indicates that particular phase

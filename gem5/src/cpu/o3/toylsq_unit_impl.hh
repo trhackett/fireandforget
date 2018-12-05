@@ -221,43 +221,43 @@ ToyLSQUnit<Impl>::regStats()
 {
     lsqForwLoads
         .name(name() + ".forwLoads")
-        .desc("Number of loads that had data forwarded from stores");
+        .desc("Toy Number of loads that had data forwarded from stores");
 
     invAddrLoads
         .name(name() + ".invAddrLoads")
-        .desc("Number of loads ignored due to an invalid address");
+        .desc("Toy Number of loads ignored due to an invalid address");
 
     lsqSquashedLoads
         .name(name() + ".squashedLoads")
-        .desc("Number of loads squashed");
+        .desc("Toy Number of loads squashed");
 
     lsqIgnoredResponses
         .name(name() + ".ignoredResponses")
-        .desc("Number of memory responses ignored because the instruction is squashed");
+        .desc("Toy Number of memory responses ignored because the instruction is squashed");
 
     lsqMemOrderViolation
         .name(name() + ".memOrderViolation")
-        .desc("Number of memory ordering violations");
+        .desc("Toy Number of memory ordering violations");
 
     lsqSquashedStores
         .name(name() + ".squashedStores")
-        .desc("Number of stores squashed");
+        .desc("Toy Number of stores squashed");
 
     invAddrSwpfs
         .name(name() + ".invAddrSwpfs")
-        .desc("Number of software prefetches ignored due to an invalid address");
+        .desc("Toy Number of software prefetches ignored due to an invalid address");
 
     lsqBlockedLoads
         .name(name() + ".blockedLoads")
-        .desc("Number of blocked loads due to partial load-store forwarding");
+        .desc("Toy Number of blocked loads due to partial load-store forwarding");
 
     lsqRescheduledLoads
         .name(name() + ".rescheduledLoads")
-        .desc("Number of loads that were rescheduled");
+        .desc("Toy Number of loads that were rescheduled");
 
     lsqCacheBlocked
         .name(name() + ".cacheBlocked")
-        .desc("Number of times an access to memory failed due to the cache being blocked");
+        .desc("Toy Number of times an access to memory failed due to the cache being blocked");
 }
 
 template<class Impl>
@@ -635,7 +635,8 @@ ToyLSQUnit<Impl>::executeLoad(DynInstPtr &inst)
                 inst->seqNum,
                 (load_fault != NoFault ? "fault" : "predication"));
         if (!(inst->hasRequest() && inst->strictlyOrdered()) ||
-            inst->isAtCommit()) {
+            inst->isAtCommit())
+        {
             inst->setExecuted();
         }
         iewStage->instToCommit(inst);
@@ -647,6 +648,14 @@ ToyLSQUnit<Impl>::executeLoad(DynInstPtr &inst)
 
         if (checkLoads)
             return checkViolations(load_idx, inst);
+
+        // ADDING - copy the memData over just the first time
+        if (inst->memData != nullptr && !inst->isExecuted()) {
+            inst->memDataCopy = new uint8_t[inst->memDataSize];
+            memcpy(inst->memDataCopy, inst->memData, inst->memDataSize);
+            inst->copySize = inst->memDataSize;
+        }
+        // DONE ADDING
     }
 
     return load_fault;
@@ -705,11 +714,49 @@ ToyLSQUnit<Impl>::executeStore(DynInstPtr &store_inst)
 
 }
 
+// ADDED - many changes here
 template <class Impl>
 void
 ToyLSQUnit<Impl>::commitLoad()
 {
-    assert(loadQueue[loadHead]);
+    DynInstPtr load_inst = loadQueue[loadHead];
+    assert(load_inst && load_inst->isLoad());
+
+    // make sure we've executed it, and if we aren't draining
+    // the cpu, re-execute to make sure it still loads the right
+    // value - there's a good change, commit.hh is going to take
+    // care of the timing of drains and what not, but just to be
+    // extra sure
+    if (!cpu->isDraining() && load_inst->isExecuted())
+    {
+        load_inst->clearExecuted();
+        Fault fault = executeLoad(load_inst);
+
+        if (fault == NoFault) {
+            
+            // compare memDataCopy and memData
+            bool differ = load_inst->copySize != load_inst->memDataSize; 
+            if (!differ) {
+                for (unsigned int i = 0; i < load_inst->copySize; i++)
+                {
+                    differ = differ &&
+                             (load_inst->memDataCopy[i] != load_inst->memData[i]);
+                }
+            }
+
+            // if they aren't the same, flush
+            if (differ) {
+                DPRINTF(ToyLSQUnit, "Re-executed failed aka they differed, so flush!\n");
+                cpu->drain();
+                return;
+            }
+        }
+
+        // no clue what to do if it fails...???
+        else {
+            DPRINTF(ToyLSQUnit, "Re-executed the load and it faulted...\n");
+        }
+    }
 
     DPRINTF(ToyLSQUnit, "Committing head load instruction, PC %s\n",
             loadQueue[loadHead]->pcState());

@@ -597,9 +597,12 @@ ToyLSQUnit<Impl>::read(const RequestPtr &req,
         load_inst->recordResult(true);
     }
 
+    // something to do with memory mapped registers, I'm choosing not to deal
+    // with it
     if (req->isMmappedIpr()) {
         assert(!load_inst->memData);
         load_inst->memData = new uint8_t[64];
+        load_inst->memDataSize = 64;
 
         ThreadContext *thread = cpu->tcBase(lsqID);
         Cycles delay(0);
@@ -677,6 +680,7 @@ ToyLSQUnit<Impl>::read(const RequestPtr &req,
             // Allocate memory if this is the first time a load is issued.
             if (!load_inst->memData) {
                 load_inst->memData = new uint8_t[req->getSize()];
+                load_inst->memDataSize = req->getSize();
             }
             if (storeQueue[store_idx].isAllZeros)
                 memset(load_inst->memData, 0, req->getSize());
@@ -753,6 +757,7 @@ ToyLSQUnit<Impl>::read(const RequestPtr &req,
     // Allocate memory if this is the first time a load is issued.
     if (!load_inst->memData) {
         load_inst->memData = new uint8_t[req->getSize()];
+        load_inst->memDataSize = req->getSize();
     }
 
     // if we the cache is not blocked, do cache access

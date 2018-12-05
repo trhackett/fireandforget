@@ -103,6 +103,12 @@ class BaseO3DynInst : public BaseDynInst<Impl>
     /** Completes the access.  Only valid for memory operations. */
     Fault completeAcc(PacketPtr pkt);
 
+    // ADDED, copy of memData for comparison on re-execute
+    uint8_t* memDataCopy;
+    int copySize;
+    int memDataSize;
+    // DONE ADDING
+
   private:
     /** Initializes variables. */
     void initVars();
