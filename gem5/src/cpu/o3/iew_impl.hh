@@ -476,6 +476,31 @@ DefaultIEW<Impl>::squash(ThreadID tid)
     emptyRenameInsts(tid);
 }
 
+/*
+    you know what this does the same exact thing as squashDueToMemOrder,
+    but whatever, prints something different
+*/
+template<class Impl>
+void
+DefaultIEW<Impl>::squashDueToMemReExecute(DynInstPtr &inst, ThreadID tid)
+{
+    DPRINTF(IEW, "[tid:%i]: Squashing from a re-executed instruction, PC: %s "
+            "[sn:%i].\n", tid, inst->pcState(), inst->seqNum);
+
+    if (!toCommit->squash[tid] ||
+            inst->seqNum < toCommit->squashedSeqNum[tid]) {
+        toCommit->squash[tid] = true;
+        toCommit->squashedSeqNum[tid] = inst->seqNum;
+
+        toCommit->mispredictInst[tid] = NULL;
+
+        toCommit->pc[tid] = inst->pcState();
+        toCommit->includeSquashInst[tid] = false;
+
+        wroteToTimeBuffer = true;
+    }
+}
+
 template<class Impl>
 void
 DefaultIEW<Impl>::squashDueToBranch(DynInstPtr &inst, ThreadID tid)
@@ -498,7 +523,6 @@ DefaultIEW<Impl>::squashDueToBranch(DynInstPtr &inst, ThreadID tid)
 
         wroteToTimeBuffer = true;
     }
-
 }
 
 template<class Impl>
@@ -1522,6 +1546,26 @@ DefaultIEW<Impl>::tick()
             ldstQueue.commitStores(fromCommit->commitInfo[tid].doneSeqNum,tid);
 
             ldstQueue.commitLoads(fromCommit->commitInfo[tid].doneSeqNum,tid);
+
+            // ADDED - if the load doesn't match, problem!
+            if (ldstQueue.violation(tid)) {
+                DynInstPtr violator;
+                violator = ldstQueue.getMemDepViolator(tid);
+
+                DPRINTF(IEW, "LDSTQ re-executed and it failed! Violator PC: %s "
+                        "[sn:%lli], Addr is: %#x.\n",
+                        violator->pcState(), violator->seqNum,
+                        violator->physEffAddrLow);
+
+                fetchRedirect[tid] = true;
+
+                // Squash. I know it's not a branch, but violator is the instrucion
+                // to squash
+                squashDueToMemReExecute(violator, tid);
+
+                // do i note this as a memorder violation??
+                ++memOrderViolationEvents;
+            }
 
             updateLSQNextCycle = true;
             instQueue.commit(fromCommit->commitInfo[tid].doneSeqNum,tid);

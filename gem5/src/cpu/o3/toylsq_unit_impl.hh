@@ -764,8 +764,14 @@ ToyLSQUnit<Impl>::commitLoad()
             } else {
                 DPRINTF(ToyLSQUnit, "Re-execute failed aka they differed, so flush\n");
                 // squash(load_inst->seqNum);
-                cpu->flush();
-                // not sure that it should be removed...
+                // iewStage->squashDueToMemOrder(load_inst, lsqID);
+                memDepViolator = load_inst;
+                // setting this will tell everyone that there's been a violation
+                // aka it'll trigger IEW::tick() to squashDueToMemOrder()
+
+                // actually, it should definitely be removed but it's unlikely that
+                // I should stop committing loads - well idk it's hard to say! Keep
+                // it for now...
                 loadQueue[loadHead] = nullptr;
                 incrLdIdx(loadHead);
                 loads--;
@@ -800,9 +806,7 @@ ToyLSQUnit<Impl>::commitLoads(InstSeqNum &youngest_inst)
     // ADDED
     bool succeeded = true;
     while (succeeded && loads != 0 && loadQueue[loadHead]->seqNum <= youngest_inst) {
-        printf("\tsn:%li returned\n",loadQueue[loadHead]->seqNum);
         succeeded = commitLoad();
-        printf("\t%s\n",succeeded ? "true" : "false");
     }
 }
 

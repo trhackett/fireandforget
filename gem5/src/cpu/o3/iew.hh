@@ -236,6 +236,9 @@ class DefaultIEW
     void checkMisprediction(DynInstPtr &inst);
 
   private:
+
+    // ADDED - need to send different info
+    void squashDueToMemReExecute(DynInstPtr &inst, ThreadID tid);
     /** Sends commit proper information for a squash due to a branch
      * mispredict.
      */
