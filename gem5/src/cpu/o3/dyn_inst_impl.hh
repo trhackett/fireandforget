@@ -117,6 +117,8 @@ BaseO3DynInst<Impl>::initVars()
 
     // ADDED - take care of yo memory
     memDataCopy = nullptr;
+    copySize = -1;
+    memDataSize = -1;
 
 #if TRACING_ON
     // Value -1 indicates that particular phase

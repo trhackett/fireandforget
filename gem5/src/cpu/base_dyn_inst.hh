@@ -901,8 +901,10 @@ BaseDynInst<Impl>::initiateMemRead(Addr addr, unsigned size,
     RequestPtr sreqLow = NULL;
     RequestPtr sreqHigh = NULL;
 
-    if (instFlags[ReqMade] && translationStarted()) {
-        req = savedReq;
+    // instFlags[EffAddrValid] will be false until the translation has complete
+    // aka until the first load have completed
+    if (!instFlags[EffAddrValid] && instFlags[ReqMade] && translationStarted()) {
+        req = savedReq; // this gives nullptr for re-execution
         sreqLow = savedSreqLow;
         sreqHigh = savedSreqHigh;
     } else {

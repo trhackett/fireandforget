@@ -90,6 +90,14 @@ BaseO3CPU::regStats()
     BaseCPU::regStats();
 }
 
+// ADDED
+template<class Impl>
+void
+FullO3CPU<Impl>::flush()
+{
+    // dumpInsts();
+}
+
 template<class Impl>
 bool
 FullO3CPU<Impl>::IcachePort::recvTimingResp(PacketPtr pkt)
@@ -1740,10 +1748,11 @@ FullO3CPU<Impl>::dumpInsts()
 
     while (inst_list_it != instList.end()) {
         cprintf("Instruction:%i\nPC:%#x\n[tid:%i]\n[sn:%lli]\nIssued:%i\n"
-                "Squashed:%i\n\n",
+                "Squashed:%i\n"
+                "Completed:%i\n\n",
                 num, (*inst_list_it)->instAddr(), (*inst_list_it)->threadNumber,
                 (*inst_list_it)->seqNum, (*inst_list_it)->isIssued(),
-                (*inst_list_it)->isSquashed());
+                (*inst_list_it)->isSquashed(), (*inst_list_it)->isCompleted());
         inst_list_it++;
         ++num;
     }

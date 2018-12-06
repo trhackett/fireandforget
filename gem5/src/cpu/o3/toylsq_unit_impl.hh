@@ -620,7 +620,10 @@ ToyLSQUnit<Impl>::executeLoad(DynInstPtr &inst)
 
     if (inst->isTranslationDelayed() &&
         load_fault == NoFault)
+    {
+        DPRINTF(ToyLSQUnit, "Execute is translation delayed and NoFault\n");
         return load_fault;
+    }
 
     // If the instruction faulted or predicated false, then we need to send it
     // along to commit without the instruction completing.
@@ -642,20 +645,26 @@ ToyLSQUnit<Impl>::executeLoad(DynInstPtr &inst)
         iewStage->instToCommit(inst);
         iewStage->activityThisCycle();
     } else {
+        DPRINTF(ToyLSQUnit, "   executeLoad NoFault and readPredicate\n");
         assert(inst->effAddrValid());
         int load_idx = inst->lqIdx;
         incrLdIdx(load_idx);
 
-        if (checkLoads)
-            return checkViolations(load_idx, inst);
-
         // ADDING - copy the memData over just the first time
-        if (inst->memData != nullptr && !inst->isExecuted()) {
+        if (inst->memDataCopy == nullptr && inst->memData != nullptr) {
+            DPRINTF(ToyLSQUnit, "sn:%lli    Copying memData into memDataCopy, size: %d\n",inst->seqNum, inst->memDataSize);
             inst->memDataCopy = new uint8_t[inst->memDataSize];
             memcpy(inst->memDataCopy, inst->memData, inst->memDataSize);
             inst->copySize = inst->memDataSize;
+
+            // you should also reset memDada
+            // delete [] inst->memData;
+            // inst->memData = nullptr;
         }
         // DONE ADDING
+
+        if (checkLoads)
+            return checkViolations(load_idx, inst);
     }
 
     return load_fault;
@@ -714,9 +723,9 @@ ToyLSQUnit<Impl>::executeStore(DynInstPtr &store_inst)
 
 }
 
-// ADDED - many changes here
+// ADDED - many changes here, returns true if it succeeded, false if we are flushi
 template <class Impl>
-void
+bool
 ToyLSQUnit<Impl>::commitLoad()
 {
     DynInstPtr load_inst = loadQueue[loadHead];
@@ -729,26 +738,38 @@ ToyLSQUnit<Impl>::commitLoad()
     // extra sure
     if (!cpu->isDraining() && load_inst->isExecuted())
     {
+        DPRINTF(ToyLSQUnit, "Re-executing load sn:%lli\n", load_inst->seqNum);
         load_inst->clearExecuted();
         Fault fault = executeLoad(load_inst);
 
         if (fault == NoFault) {
             
             // compare memDataCopy and memData
-            bool differ = load_inst->copySize != load_inst->memDataSize; 
-            if (!differ) {
+            printf("sn:%li copySize: %d, memDataSize: %d\n", load_inst->seqNum, load_inst->copySize, load_inst->memDataSize);
+            bool sameSize = load_inst->copySize == load_inst->memDataSize;
+            bool sameElements = true;
+            if (sameSize) {
                 for (unsigned int i = 0; i < load_inst->copySize; i++)
                 {
-                    differ = differ &&
-                             (load_inst->memDataCopy[i] != load_inst->memData[i]);
+                    printf("copy data: %d == memData %d\n", load_inst->memDataCopy[i], load_inst->memData[i]);
+                    if (load_inst->memDataCopy[i] != load_inst->memData[i]) {
+                        sameElements = false;
+                    }
                 }
             }
 
             // if they aren't the same, flush
-            if (differ) {
-                DPRINTF(ToyLSQUnit, "Re-executed failed aka they differed, so flush!\n");
-                cpu->drain();
-                return;
+            if (sameSize && sameElements) {
+                DPRINTF(ToyLSQUnit, "didn't differ so don't flush!\n");
+            } else {
+                DPRINTF(ToyLSQUnit, "Re-execute failed aka they differed, so flush\n");
+                // squash(load_inst->seqNum);
+                cpu->flush();
+                // not sure that it should be removed...
+                loadQueue[loadHead] = nullptr;
+                incrLdIdx(loadHead);
+                loads--;
+                return false;
             }
         }
 
@@ -758,14 +779,16 @@ ToyLSQUnit<Impl>::commitLoad()
         }
     }
 
-    DPRINTF(ToyLSQUnit, "Committing head load instruction, PC %s\n",
-            loadQueue[loadHead]->pcState());
+    DPRINTF(ToyLSQUnit, "Committing head load instruction, PC %s, [sn:%lli]\n",
+            loadQueue[loadHead]->pcState(), loadQueue[loadHead]->seqNum);
 
     loadQueue[loadHead] = NULL;
 
     incrLdIdx(loadHead);
 
     --loads;
+
+    return true;
 }
 
 template <class Impl>
@@ -774,8 +797,12 @@ ToyLSQUnit<Impl>::commitLoads(InstSeqNum &youngest_inst)
 {
     assert(loads == 0 || loadQueue[loadHead]);
 
-    while (loads != 0 && loadQueue[loadHead]->seqNum <= youngest_inst) {
-        commitLoad();
+    // ADDED
+    bool succeeded = true;
+    while (succeeded && loads != 0 && loadQueue[loadHead]->seqNum <= youngest_inst) {
+        printf("\tsn:%li returned\n",loadQueue[loadHead]->seqNum);
+        succeeded = commitLoad();
+        printf("\t%s\n",succeeded ? "true" : "false");
     }
 }
 

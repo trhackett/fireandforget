@@ -414,16 +414,22 @@ MemDepUnit<MemDepPred, Impl>::completed(DynInstPtr &inst)
     // Remove the instruction from the hash and the list.
     MemDepHashIt hash_it = memDepHash.find(inst->seqNum);
 
-    assert(hash_it != memDepHash.end());
+    // ADDED - instead of assert, be ok with that failing just
+    // never erase something that isn't in there
+    // assert(hash_it != memDepHash.end());
 
-    instList[tid].erase((*hash_it).second->listIt);
+    if (hash_it != memDepHash.end()) {
 
-    (*hash_it).second = NULL;
+        instList[tid].erase((*hash_it).second->listIt);
 
-    memDepHash.erase(hash_it);
+        (*hash_it).second = NULL;
+
+        memDepHash.erase(hash_it);
 #ifdef DEBUG
-    MemDepEntry::memdep_erase++;
+        MemDepEntry::memdep_erase++;
 #endif
+
+    }
 }
 
 template <class MemDepPred, class Impl>

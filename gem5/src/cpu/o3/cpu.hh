@@ -329,6 +329,14 @@ class FullO3CPU : public BaseO3CPU
     void unserializeThread(CheckpointIn &cp, ThreadID tid) override;
 
   public:
+    /* ADDED
+        flush all in flight instructions - maybe find the most
+        recentlycommitted one (isCompleted() == true), remove
+        all of the committed ones, and somehow refetch all of those
+        that haven't completed
+    */
+    void flush();
+
     /** Executes a syscall.
      * @todo: Determine if this needs to be virtual.
      */

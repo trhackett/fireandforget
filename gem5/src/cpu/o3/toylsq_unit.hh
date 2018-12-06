@@ -144,7 +144,7 @@ class ToyLSQUnit {
     Fault executeStore(DynInstPtr &inst);
 
     /** Commits the head load. */
-    void commitLoad();
+    bool commitLoad();
     /** Commits loads older than a specific sequence number. */
     void commitLoads(InstSeqNum &youngest_inst);
 
@@ -555,9 +555,16 @@ ToyLSQUnit<Impl>::read(const RequestPtr &req,
                     RequestPtr &sreqLow, RequestPtr &sreqHigh,
                     int load_idx)
 {
+    DPRINTF(ToyLSQUnit, "ToyLSQUnit read happening\n");
+
     DynInstPtr load_inst = loadQueue[load_idx];
 
-    assert(load_inst);
+    // ADDED - if this is nullptr, that means the instruction has already re-executed,
+    // so don't do anything?
+    // assert(load_inst);
+    if (!load_inst) {
+        return NoFault;
+    }
 
     assert(!load_inst->isExecuted());
 
