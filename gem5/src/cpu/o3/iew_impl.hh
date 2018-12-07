@@ -1263,7 +1263,9 @@ DefaultIEW<Impl>::executeInsts()
             if (inst->isLoad()) {
                 // Loads will mark themselves as executed, and their writeback
                 // event adds the instruction to the queue to commit
-                fault = ldstQueue.executeLoad(inst);
+                if (!inst->isExecuted()) {
+                    fault = ldstQueue.executeLoad(inst);
+                }
 
                 if (inst->isTranslationDelayed() &&
                     fault == NoFault) {

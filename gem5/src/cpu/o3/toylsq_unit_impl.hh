@@ -760,6 +760,8 @@ ToyLSQUnit<Impl>::commitLoad()
         load_inst->initiateAcc();
         DPRINTF(ToyLSQUnit, "   done re-executing load sn:%lli\n", load_inst->seqNum);
 
+        load_inst->setExecuted();
+
         for (unsigned int i = 0; i < load_inst->memDataSize; i++) {
             printf("%d| orig: %d, reex: %d\n", load_inst->memDataSize,
                 load_inst->memData[i], load_inst->memDataCopy[i]);
