@@ -7,7 +7,8 @@ Claudia Siedel
 
 Files we've added/modified (track for scp purposes):
 gem5/src/cpu/o3/{ cpu_policy.cc SConscript toylsq.hh toylsq.cc toylsq_impl.hh
-				 toylsq_unit.hh toylsq_unit.cc toylsq_unit_impl.hh }
+				 toylsq_unit.hh toylsq_unit.cc toylsq_unit_impl.hh iew.hh
+				 iew_impl.hh dyn_inst.hh }
 
 --- Citation for gem5 ---
 
