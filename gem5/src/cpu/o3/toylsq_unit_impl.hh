@@ -645,14 +645,13 @@ ToyLSQUnit<Impl>::executeLoad(DynInstPtr &inst)
         iewStage->instToCommit(inst);
         iewStage->activityThisCycle();
     } else {
-        DPRINTF(ToyLSQUnit, "   executeLoad NoFault and readPredicate\n");
         assert(inst->effAddrValid());
         int load_idx = inst->lqIdx;
         incrLdIdx(load_idx);
 
         // ADDING - copy the memData over just the first time
         if (inst->memDataCopy == nullptr && inst->memData != nullptr) {
-            DPRINTF(ToyLSQUnit, "sn:%lli    Copying memData into memDataCopy, size: %d\n",inst->seqNum, inst->memDataSize);
+            DPRINTF(ToyLSQUnit, "   copying memData into memDataCopy, size: %d [sn:%lli]\n",inst->seqNum, inst->memDataSize);
             inst->memDataCopy = new uint8_t[inst->memDataSize];
             memcpy(inst->memDataCopy, inst->memData, inst->memDataSize);
             inst->copySize = inst->memDataSize;
@@ -738,10 +737,35 @@ ToyLSQUnit<Impl>::commitLoad()
     // extra sure
     if (!cpu->isDraining() && load_inst->isExecuted())
     {
-        DPRINTF(ToyLSQUnit, "Re-executing load sn:%lli\n", load_inst->seqNum);
+        
         load_inst->clearExecuted();
-        Fault fault = executeLoad(load_inst);
 
+        // actually re-execute
+        Fault fault = NoFault;
+
+        assert(load_inst->translationCompleted());
+        assert(load_inst->memData != nullptr);
+
+        // translation is always completed here
+        /*if (load_inst->translationCompleted()) {
+            DPRINTF(ToyLSQUnit, " ~~~ Translation completed!\n");
+        } else {
+            DPRINTF(ToyLSQUnit, " ~~~ Not translation completed!\n");
+        }*/
+
+        // delete [] load_inst->memData;
+        // load_inst->memDataSize = 0;
+
+        DPRINTF(ToyLSQUnit, "   re-executing load sn:%lli\n", load_inst->seqNum);
+        load_inst->initiateAcc();
+        DPRINTF(ToyLSQUnit, "   done re-executing load sn:%lli\n", load_inst->seqNum);
+
+        for (unsigned int i = 0; i < load_inst->memDataSize; i++) {
+            printf("%d| orig: %d, reex: %d\n", load_inst->memDataSize,
+                load_inst->memData[i], load_inst->memDataCopy[i]);
+        }
+
+/*
         if (fault == NoFault) {
             
             // compare memDataCopy and memData
@@ -761,7 +785,7 @@ ToyLSQUnit<Impl>::commitLoad()
             // if they aren't the same, flush
             if (sameSize && sameElements) {
                 DPRINTF(ToyLSQUnit, "didn't differ so don't flush!\n");
-            } else {
+            }else {
                 DPRINTF(ToyLSQUnit, "Re-execute failed aka they differed, so flush\n");
                 // squash(load_inst->seqNum);
                 // iewStage->squashDueToMemOrder(load_inst, lsqID);
@@ -783,6 +807,7 @@ ToyLSQUnit<Impl>::commitLoad()
         else {
             DPRINTF(ToyLSQUnit, "Re-executed the load and it faulted...\n");
         }
+*/
     }
 
     DPRINTF(ToyLSQUnit, "Committing head load instruction, PC %s, [sn:%lli]\n",

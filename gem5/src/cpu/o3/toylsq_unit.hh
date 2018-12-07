@@ -561,12 +561,16 @@ ToyLSQUnit<Impl>::read(const RequestPtr &req,
 
     // ADDED - if this is nullptr, that means the instruction has already re-executed,
     // so don't do anything?
-    // assert(load_inst);
-    if (!load_inst) {
-        return NoFault;
-    }
+    assert(load_inst); // what do i do when this doesn't pass???
+    // if (!load_inst) {
+    //     return NoFault;
+    // }
+
+    DPRINTF(ToyLSQUnit, "A\n");
 
     assert(!load_inst->isExecuted());
+
+    DPRINTF(ToyLSQUnit, "B\n");
 
     // Make sure this isn't a strictly ordered load
     // A bit of a hackish way to get strictly ordered accesses to work
@@ -583,6 +587,8 @@ ToyLSQUnit<Impl>::read(const RequestPtr &req,
             "Strictly ordered load [sn:%llx] PC %s\n",
             load_inst->seqNum, load_inst->pcState());
     }
+
+    DPRINTF(ToyLSQUnit, "C\n");
 
     // Check the SQ for any previous stores that might lead to forwarding
     int store_idx = load_inst->sqIdx;

@@ -1094,6 +1094,9 @@ BaseDynInst<Impl>::finishTranslation(WholeTranslationState *state)
     } else {
         state->deleteReqs();
     }
+
+    // when state gets deleted here, savedReq,savesSreqLow,savedSreqHigh
+    // are invalid
     delete state;
 
     translationCompleted(true);
