@@ -763,7 +763,7 @@ ToyLSQUnit<Impl>::commitLoad()
         load_inst->setExecuted();
 
         for (unsigned int i = 0; i < load_inst->memDataSize; i++) {
-            printf("%d| orig: %d, reex: %d\n", load_inst->memDataSize,
+            printf("%d| orig: %d, reex: %d\n", i,
                 load_inst->memData[i], load_inst->memDataCopy[i]);
         }
 
