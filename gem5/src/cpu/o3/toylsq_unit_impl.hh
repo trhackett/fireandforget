@@ -774,6 +774,9 @@ ToyLSQUnit<Impl>::commitLoad()
 
         if (!sameData) {
             memDepViolator = load_inst;
+            printf("~~~ different data\n");
+        } else {
+            printf("~~~ same data\n");
         }
 
 /*
