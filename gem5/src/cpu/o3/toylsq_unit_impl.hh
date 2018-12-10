@@ -762,9 +762,18 @@ ToyLSQUnit<Impl>::commitLoad()
 
         load_inst->setExecuted();
 
+        bool sameData = true;
+
         for (unsigned int i = 0; i < load_inst->memDataSize; i++) {
             printf("%d| orig: %d, reex: %d\n", i,
                 load_inst->memData[i], load_inst->memDataCopy[i]);
+            if (load_inst->memData[i] != load_inst->memDataCopy[i]) {
+                sameData = false;
+            }
+        }
+
+        if (!sameData) {
+            memDepViolator = load_inst;
         }
 
 /*
