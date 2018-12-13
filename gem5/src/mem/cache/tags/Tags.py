@@ -111,8 +111,3 @@ class FALRU(BaseTags):
 
     # This tag uses its own embedded indexing
     indexing_policy = NULL
-
-class NMRU(BaseSetAssoc):
-    type = 'NMRU'
-    cxx_header = "mem/cache/tags/nmru.hh"
-    indexing_policy = SetAssociative

@@ -1192,33 +1192,6 @@ DefaultCommit<Impl>::commitHead(DynInstPtr &head_inst, unsigned inst_num)
 
     // Stores mark themselves as completed.
     if (!head_inst->isStore() && inst_fault == NoFault) {
-
-/*
-        // print out its memData first
-        if (head_inst->isLoad()) {
-            
-            // print out memData
-            for (unsigned int i = 0; i < head_inst->resultSize(); i++) {
-                DPRINTF(Commit, "Result: |%d", head_inst->memData[i]);
-            }
-            printf("|\n");
-
-            // what type is a load?
-            if (head_inst->isInteger()) {
-                printf("integer\n"); // this one
-            } else if (head_inst->isVector()) {
-                printf("vector\n");
-            }
-
-            // so worth mentioning that this prints the same thing as above
-            // actually is somewhat unclear but I'm pretty sure this is the case
-            InstResult ir;
-            ir = head_inst->popResult();
-            DPRINTF(Commit, "Result: |%ld|\n", ir.asInteger());
-            // head_inst->setVecResult(ir);
-        }
-*/
-
         head_inst->setCompleted();
     }
 

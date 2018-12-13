@@ -746,16 +746,6 @@ ToyLSQUnit<Impl>::commitLoad()
         assert(load_inst->translationCompleted());
         assert(load_inst->memData != nullptr);
 
-        // translation is always completed here
-        /*if (load_inst->translationCompleted()) {
-            DPRINTF(ToyLSQUnit, " ~~~ Translation completed!\n");
-        } else {
-            DPRINTF(ToyLSQUnit, " ~~~ Not translation completed!\n");
-        }*/
-
-        // delete [] load_inst->memData;
-        // load_inst->memDataSize = 0;
-
         DPRINTF(ToyLSQUnit, "   re-executing load sn:%lli\n", load_inst->seqNum);
         load_inst->initiateAcc();
         DPRINTF(ToyLSQUnit, "   done re-executing load sn:%lli\n", load_inst->seqNum);
@@ -774,54 +764,13 @@ ToyLSQUnit<Impl>::commitLoad()
 
         if (!sameData) {
             memDepViolator = load_inst;
+            // cpu->drain();
+            // cpu->tryDrain(); // private... make it public?
             printf("~~~ different data\n");
+            return false;
         } else {
             printf("~~~ same data\n");
         }
-
-/*
-        if (fault == NoFault) {
-            
-            // compare memDataCopy and memData
-            printf("sn:%li copySize: %d, memDataSize: %d\n", load_inst->seqNum, load_inst->copySize, load_inst->memDataSize);
-            bool sameSize = load_inst->copySize == load_inst->memDataSize;
-            bool sameElements = true;
-            if (sameSize) {
-                for (unsigned int i = 0; i < load_inst->copySize; i++)
-                {
-                    printf("copy data: %d == memData %d\n", load_inst->memDataCopy[i], load_inst->memData[i]);
-                    if (load_inst->memDataCopy[i] != load_inst->memData[i]) {
-                        sameElements = false;
-                    }
-                }
-            }
-
-            // if they aren't the same, flush
-            if (sameSize && sameElements) {
-                DPRINTF(ToyLSQUnit, "didn't differ so don't flush!\n");
-            }else {
-                DPRINTF(ToyLSQUnit, "Re-execute failed aka they differed, so flush\n");
-                // squash(load_inst->seqNum);
-                // iewStage->squashDueToMemOrder(load_inst, lsqID);
-                memDepViolator = load_inst;
-                // setting this will tell everyone that there's been a violation
-                // aka it'll trigger IEW::tick() to squashDueToMemOrder()
-
-                // actually, it should definitely be removed but it's unlikely that
-                // I should stop committing loads - well idk it's hard to say! Keep
-                // it for now...
-                loadQueue[loadHead] = nullptr;
-                incrLdIdx(loadHead);
-                loads--;
-                return false;
-            }
-        }
-
-        // no clue what to do if it fails...???
-        else {
-            DPRINTF(ToyLSQUnit, "Re-executed the load and it faulted...\n");
-        }
-*/
     }
 
     DPRINTF(ToyLSQUnit, "Committing head load instruction, PC %s, [sn:%lli]\n",

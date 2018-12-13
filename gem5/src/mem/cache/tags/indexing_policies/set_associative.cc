@@ -80,39 +80,3 @@ SetAssociativeParams::create()
 {
     return new SetAssociative(this);
 }
-
-void SetAssociative::moveToHead(CacheBlk *blk)
-{
-  uint32_t set_id = extractSet(blk->tag);
-  std::vector<ReplaceableEntry*> cur_set = sets[set_id];
-  CacheBlk* head = static_cast<CacheBlk*>(cur_set[0]);
-
-  // just swap with the top element
-  for(const auto& entry : cur_set){
-	CacheBlk* temp = static_cast<CacheBlk*>(entry);
-	if(temp==blk){
-	  std::swap(temp,head);
-      DPRINTF(CacheRepl, "set %x: moving blk %x to MRU\n",
-              set_id, blk->tag);
-	  break;
-	}
-  }
-}
-
-void SetAssociative::moveToTail(CacheBlk *blk)
-{
-  uint32_t set_id = extractSet(blk->tag);
-  std::vector<ReplaceableEntry*> cur_set = sets[set_id];
-  CacheBlk* tail = static_cast<CacheBlk*>(cur_set[assoc-1]);
-
-  // just swap with the tail element
-  for(const auto& entry : cur_set){
-	CacheBlk* temp = static_cast<CacheBlk*>(entry);
-	if(temp==blk){
-	  std::swap(temp,tail);
-      DPRINTF(CacheRepl, "set %x: moving blk %x to MRU\n",
-              set_id, blk->tag);
-	  break;
-	}
-  }
-}

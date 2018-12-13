@@ -55,8 +55,6 @@
 #include "params/BaseIndexingPolicy.hh"
 #include "sim/sim_object.hh"
 
-#include "mem/cache/cache_blk.hh"
-
 class ReplaceableEntry;
 
 /**
@@ -160,15 +158,6 @@ class BaseIndexingPolicy : public SimObject
      */
     virtual Addr regenerateAddr(const Addr tag, const ReplaceableEntry* entry)
                                                                     const = 0;
-
-    /**
-     * Move the given block to the head of the given set
-     */
-    virtual void moveToHead(CacheBlk *blk) { }
-    /**
-     * Move the given block to the tail of the given set
-     */
-    virtual void moveToTail(CacheBlk *blk) { }
 };
 
 #endif //__MEM_CACHE_INDEXING_POLICIES_BASE_HH__

@@ -1561,6 +1561,9 @@ DefaultIEW<Impl>::tick()
 
                 fetchRedirect[tid] = true;
 
+                // Tell the instruction queue that a violation has occured.
+                instQueue.violation(violator, violator); // do loads go in instqueue
+
                 // Squash. I know it's not a branch, but violator is the instrucion
                 // to squash
                 squashDueToMemReExecute(violator, tid);
@@ -1569,8 +1572,10 @@ DefaultIEW<Impl>::tick()
                 ++memOrderViolationEvents;
             }
 
-            updateLSQNextCycle = true;
-            instQueue.commit(fromCommit->commitInfo[tid].doneSeqNum,tid);
+            else {
+                updateLSQNextCycle = true;
+                instQueue.commit(fromCommit->commitInfo[tid].doneSeqNum,tid);
+            }
         }
 
         if (fromCommit->commitInfo[tid].nonSpecSeqNum != 0) {

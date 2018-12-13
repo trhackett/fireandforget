@@ -53,8 +53,3 @@ class SkewedAssociative(BaseIndexingPolicy):
     type = 'SkewedAssociative'
     cxx_class = 'SkewedAssociative'
     cxx_header = "mem/cache/tags/indexing_policies/skewed_associative.hh"
-
-class LIP(BaseIndexingPolicy):
-    type = 'LIP'
-    cxx_class = 'LIP'
-    cxx_header = "mem/cache/tags/indexing_policies/lip.hh"

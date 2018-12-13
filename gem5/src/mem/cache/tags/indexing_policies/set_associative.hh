@@ -12,7 +12,7 @@
  * unmodified and in its entirety in all distributions of the software,
  * modified or unmodified, in source code or in binary form.
  *
- * Copyr;ight (c) 2003-2005,2014 The Regents of The University of Michigan
+ * Copyright (c) 2003-2005,2014 The Regents of The University of Michigan
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -55,8 +55,6 @@
 #include "mem/cache/tags/indexing_policies/base.hh"
 #include "params/SetAssociative.hh"
 
-#include "debug/CacheRepl.hh"
-
 class ReplaceableEntry;
 
 /**
@@ -83,7 +81,7 @@ class ReplaceableEntry;
  */
 class SetAssociative : public BaseIndexingPolicy
 {
-  protected:
+  private:
     /**
      * Apply a hash function to calculate address set.
      *
@@ -129,9 +127,6 @@ class SetAssociative : public BaseIndexingPolicy
      */
     Addr regenerateAddr(const Addr tag, const ReplaceableEntry* entry) const
                                                                    override;
-
-    void moveToHead(CacheBlk *blk) override;
-    void moveToTail(CacheBlk *blk) override;
 };
 
 #endif //__MEM_CACHE_INDEXING_POLICIES_SET_ASSOCIATIVE_HH__
